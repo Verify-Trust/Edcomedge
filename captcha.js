@@ -1,10 +1,4 @@
-﻿<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Verify. Trust powered by edcomedge – Sicheres Captcha</title>
-  <!-- Globale Basisstyles: Hier wird Roboto als Standardschrift verwendet -->
+document.write(`
   <style>
     body {
       margin: 0;
@@ -22,8 +16,7 @@
       display: none;
     }
   </style>
-</head>
-<body>
+
   <!-- Unsichtbares Formular, das alle Prüfungen des Captchas enthält -->
   <form id="myForm" action="/your-backend-endpoint" method="post" aria-hidden="true">
     <!-- Honeypot-Feld: Bots füllen dieses Feld in der Regel, echte Nutzer nicht -->
@@ -37,18 +30,14 @@
   <!-- Verstecktes Element für CSS-Check -->
   <div id="styleCheck"></div>
 
-
   <!-- Container für das Captcha-Widget (sichtbar für den Nutzer) -->
   <div id="verifyContainer" style="display: none;"></div>
-
 
   <!-- Template für das Captcha-Widget – Inhalte werden in das isolierte Shadow DOM eingebunden -->
   <template id="captchaTemplate">
     <style>
-      /* Importiere Google Font "Poppins" exklusiv für den Captcha-Text */
       @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');
       
-      /* Styles, die ausschließlich im Shadow DOM gelten */
       .verify-container {
         width: 304px;
         height: 78px;
@@ -164,7 +153,7 @@
       .verify-logo-img {
         width: 32px;
         height: 32px;
-        image-rendering: crisp-edges; /* für eine hochauflösende, klare Darstellung */
+        image-rendering: crisp-edges;
       }
       .verify-terms {
         font-size: 10px;
@@ -173,7 +162,6 @@
         line-height: 1.2;
         white-space: nowrap;
       }
-      /* Fehleranzeige: unten links im Captcha-Widget */
       #captchaError {
         position: absolute;
         bottom: 5px;
@@ -193,7 +181,6 @@
       }
     </style>
     
-    <!-- Das Captcha-Widget inkl. Fehleranzeige -->
     <div class="verify-container" id="verifyBox">
       <div class="verify-left">
         <div class="checkbox-area" id="checkboxArea" role="checkbox" aria-label="Ich bin kein Roboter" aria-checked="false">
@@ -218,8 +205,6 @@
     </div>
   </template>
 
-
-  <!-- JavaScript: Erweiterte Bot-Schutz-Logik und Captcha-Integration -->
   <script>
     /********************************************************************
      * ORIGINAL-Funktionen sichern um Überschreiben zu verhindern
@@ -227,11 +212,6 @@
     const _addEventListener = window.addEventListener;
     const _setTimeout = window.setTimeout;
     const _consoleLog = console.log;
-
-
-    /********************************************************************
-     * INITIALISIERUNG & GRUNDLEGENDE BOT-SCHUTZ-MASSNAHMEN
-     ********************************************************************/
     
     const loadTime = Date.now();
     let hasMoved = false;
@@ -242,7 +222,7 @@
     let userScore = 0;
     document.addEventListener('mousemove', () => { userScore += 1; });
     document.addEventListener('keydown', () => { userScore += 3; });
-    document.addEventListener('scroll', () => { userScore += 2; }); // zusätzliche Scroll-Aktivität
+    document.addEventListener('scroll', () => { userScore += 2; });
     
     // Erfassung von Maus- und Touch-Ereignissen
     window.addEventListener('mousemove', () => { hasMoved = true; });
@@ -260,7 +240,7 @@
       }, 100);
     }
     
-    // Zufallswert als unsichtbare Checksum zur Variabilisierung – hier könnte man später noch weitere Parameter (z.B. User-Agent) mit einfließen lassen
+    // Zufallswert als unsichtbare Checksum zur Variabilisierung
     const randomChecksum = Math.floor(Math.random() * 1000) * 17;
     document.getElementById('captchaPassed').setAttribute('data-checksum', randomChecksum);
     
@@ -326,7 +306,7 @@
       const ctx = canvas.getContext("2d");
       ctx.font = "72px monospace";
       const baseline = ctx.measureText("test").width;
-      ctx.font = `72px '${font}', monospace`;
+      ctx.font = \`72px '\${font}', monospace\`;
       const testSize = ctx.measureText("test").width;
       return baseline !== testSize;
     }
@@ -338,7 +318,7 @@
       return true;
     }
     
-    // 7. Klick-Koordinaten-Check: Echte Nutzer klicken tendenziell in der Mitte
+    // 7. Klick-Koordinaten-Check
     function isClickValid(e) {
       if (e.offsetX < 2 || e.offsetY < 2) {
         console.warn("Ungültige Klickposition.");
@@ -347,7 +327,7 @@
       return true;
     }
     
-    // 8. Genügend Benutzerinteraktion muss vorliegen
+    // 8. Genügend Benutzerinteraktion
     function hasSufficientUserInteraction() {
       if (userScore < 5) {
         console.warn("Interaktions-Score zu niedrig.");
@@ -356,9 +336,8 @@
       return true;
     }
     
-    // 9. Einfache DevTools-Erkennung (nicht absolut, aber als Zusatz)
+    // 9. Einfache DevTools-Erkennung
     function isDevToolsClosed() {
-      // Beispiel: Differenz zwischen innerWidth und outerWidth
       if (window.outerWidth - window.innerWidth > 160) {
         console.warn("DevTools scheint geöffnet.");
         return false;
@@ -379,9 +358,7 @@
              (e ? isClickValid(e) : true);
     }
     
-    /********************************************************************
-     * GRUNDLEGENDE CAPTCHA VALIDIERUNG (OHNE EXTERNE INTERAKTIONEN)
-     ********************************************************************/
+    // Weitere Validierungen
     function hasHumanWaited() {
       return Date.now() - loadTime >= 2000;
     }
@@ -395,7 +372,6 @@
       return hasMoved;
     }
     
-    // Gesamte Captcha-Validierung: Alle Bedingungen müssen erfüllt sein
     function validateCaptcha(e) {
       return userClickedCaptcha &&
              hasHumanWaited() &&
@@ -405,20 +381,15 @@
              extraSecurityChecks(e);
     }
     
-    /********************************************************************
-     * CAPTCHA-WIDGET: AUFBAU IM SHADOW DOM UND INTERAKTIVE LOGIK
-     ********************************************************************/
     const container = document.getElementById('verifyContainer');
     const shadow = container.attachShadow({ mode: 'open' });
     const template = document.getElementById('captchaTemplate');
     shadow.appendChild(template.content.cloneNode(true));
     
-    // Erzeugt ein leicht randomisiertes Intervall für den Prüf-Loop
     function getRandomInterval() {
-      return Math.floor(Math.random() * 50) + 100; // zufällig zwischen 100ms und 150ms
+      return Math.floor(Math.random() * 50) + 100;
     }
     
-    // Event-Handler für Klicks im Captcha-Widget
     function captchaClickHandler(e) {
       if (captchaVerified) return;
       
@@ -442,7 +413,6 @@
       const form = document.getElementById('myForm');
       const captchaPassedEl = document.getElementById('captchaPassed');
       
-      // Sanftere Übergänge und hochauflösende Animationen
       checkboxArea.style.transition = 'all 0.3s ease';
       checkboxLabel.style.transition = 'all 0.3s ease';
       
@@ -472,13 +442,11 @@
             checkboxLabel.style.transform = 'translateX(0)';
             checkboxLabel.style.opacity = '1';
             checkboxArea.classList.add('verified');
-            // Update ARIA-Attribute für Barrierefreiheit
             checkboxArea.setAttribute('aria-checked', 'true');
             
             captchaVerified = true;
             captchaPassedEl.value = 'true';
             
-            // Beispiel einer asynchronen Formularübermittlung mit Fetch (Fallback via catch)
             const formData = new FormData(form);
             fetch(form.action, {
               method: 'POST',
@@ -518,7 +486,6 @@
       }
     }
     
-    // Widget einblenden, sobald alle Assets geladen sind
     window.addEventListener('load', () => {
       container.style.display = 'block';
       const checkboxArea = shadow.getElementById('checkboxArea');
@@ -526,9 +493,6 @@
       checkboxArea.addEventListener('click', captchaClickHandler);
     });
     
-    /********************************************************************
-     * FORMULAR-VALIDIERUNG: Verhindern des Absendevorgangs ohne gültiges Captcha
-     ********************************************************************/
     document.getElementById('myForm').addEventListener('submit', (e) => {
       if (!validateCaptcha()) {
         e.preventDefault();
@@ -536,6 +500,4 @@
       }
     });
   </script>
-  
-</body>
-</html>
+`);
